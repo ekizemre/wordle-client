@@ -157,7 +157,7 @@ function GamePage() {
 const styles = {
   container: {
     height: "100vh",
-    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)", // arka plan gradient
+    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
     color: "#fff",
     display: "flex",
     flexDirection: "column",
@@ -203,7 +203,26 @@ const styles = {
     boxShadow: "0 6px 20px rgba(0, 0, 0, 0.3)",
     transition: "all 0.3s ease",
   },
+  cell: {
+    width: "40px",
+    height: "40px",
+    fontSize: "22px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "6px",
+    color: "#fff",
+    backgroundColor: "#555",
+    fontWeight: "bold",
+  },
+  row: {
+    display: "flex",
+    flexDirection: "row",
+    gap: "10px",
+    justifyContent: "center",
+  },
 };
+
 
 
 export default GamePage;
