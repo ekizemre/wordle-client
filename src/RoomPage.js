@@ -29,10 +29,11 @@ function RoomPage() {
 
   return (
     <div style={styles.container}>
+      <h2 style={styles.title}>Oda Kur veya Katıl</h2>
       <div style={styles.columns}>
         {/* ODA KUR */}
         <div style={styles.card}>
-          <h2>Oda Kur</h2>
+          <h3>Oda Kur</h3>
           <input
             placeholder="Takma Ad"
             value={kurAd}
@@ -52,9 +53,9 @@ function RoomPage() {
           <button onClick={odaKur} style={styles.button}>Oluştur ve Başla</button>
         </div>
 
-        {/* ODA KATIL */}
+        {/* ODAYA KATIL */}
         <div style={styles.card}>
-          <h2>Odaya Katıl</h2>
+          <h3>Odaya Katıl</h3>
           <input
             placeholder="Oda Kodu"
             value={katilKod}
@@ -87,53 +88,65 @@ function RoomPage() {
 const styles = {
   container: {
     height: "100vh",
-    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)", // arka plan gradient
+    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
     color: "#fff",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
-    gap: "20px",
+    padding: "40px 20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
   title: {
-    fontSize: "2.8rem",
-    marginBottom: "10px",
+    fontSize: "2.4rem",
+    marginBottom: "30px",
     color: "#f5f5f5",
-    textShadow: "2px 2px 5px rgba(0,0,0,0.4)",
+    textShadow: "1px 1px 4px rgba(0,0,0,0.3)",
+  },
+  columns: {
+    display: "flex",
+    flexDirection: "row",
+    gap: "40px",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    width: "100%",
+    maxWidth: "900px",
+  },
+  card: {
+    background: "rgba(255, 255, 255, 0.05)",
+    padding: "30px",
+    borderRadius: "16px",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
+    width: "320px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "15px",
+    backdropFilter: "blur(5px)",
   },
   input: {
-    fontSize: "18px",
-    padding: "12px",
-    borderRadius: "10px",
+    fontSize: "16px",
+    padding: "10px",
+    borderRadius: "8px",
     border: "2px solid #61dafb",
     outline: "none",
-    width: "260px",
+    width: "100%",
     textAlign: "center",
     backgroundColor: "#fff",
     color: "#333",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-    transition: "border-color 0.3s ease",
-  },
-  buttonGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
+    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
   },
   button: {
-    padding: "14px 32px",
-    fontSize: "18px",
+    padding: "12px 24px",
+    fontSize: "16px",
     fontWeight: "bold",
     background: "linear-gradient(135deg, #6e8efb, #a777e3)",
     border: "none",
-    borderRadius: "12px",
+    borderRadius: "10px",
     color: "#fff",
     cursor: "pointer",
-    minWidth: "220px",
-    boxShadow: "0 6px 20px rgba(0, 0, 0, 0.3)",
-    transition: "all 0.3s ease",
+    width: "100%",
+    boxShadow: "0 6px 15px rgba(0, 0, 0, 0.3)",
   },
 };
-
 
 export default RoomPage;
