@@ -35,7 +35,7 @@ function RoomPage() {
         <div style={styles.card}>
           <h3>Oda Kur</h3>
           <input
-            placeholder="Takma Ad"
+            placeholder="Kullanıcı adınız"
             value={kurAd}
             onChange={(e) => setKurAd(e.target.value)}
             style={styles.input}

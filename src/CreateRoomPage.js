@@ -11,7 +11,7 @@ function CreateRoomPage() {
 
   const odaKur = () => {
     if (nickname.trim().length < 3) {
-      alert("Lütfen en az 3 harfli bir takma ad girin.");
+      alert("Nickname giriniz.");
       return;
     }
     if (!kategori) {
