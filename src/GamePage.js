@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import socket from "./socket"; // DÜZGÜN ŞEKİLDE TEKİL SOCKET KULLANIMI
+import socket from "./socket"; 
 
 function GamePage() {
   const [searchParams] = useSearchParams();
@@ -9,7 +9,7 @@ function GamePage() {
 
   const [dogruKelime, setDogruKelime] = useState("");
   const [tahmin, setTahmin] = useState("");
-  const [gecmisTahminler, setGecmisTahminler] = useState([]); // [{ kelime: 'elma', renkler: ['correct', ...] }]
+  const [gecmisTahminler, setGecmisTahminler] = useState([]); 
   const [sonuc, setSonuc] = useState("");
   const [siraBende, setSiraBende] = useState(false);
   const [sure, setSure] = useState(30);
