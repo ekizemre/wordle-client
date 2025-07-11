@@ -31,7 +31,7 @@ function RoomPage() {
     <div style={styles.container}>
       <h2 style={styles.title}>Oda Kur veya Katıl</h2>
       <div style={styles.columns}>
-        {/* ODA KUR */}
+        
         <div style={styles.card}>
           <h3>Oda Kur</h3>
           <input
@@ -53,7 +53,7 @@ function RoomPage() {
           <button onClick={odaKur} style={styles.button}>Oluştur ve Başla</button>
         </div>
 
-        {/* ODAYA KATIL */}
+        
         <div style={styles.card}>
           <h3>Odaya Katıl</h3>
           <input

@@ -40,7 +40,7 @@ function HomePage() {
 const styles = {
   container: {
     height: "100vh",
-    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)", // arka plan gradient
+    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
     color: "#fff",
     display: "flex",
     flexDirection: "column",
