@@ -1,17 +1,20 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
 function CreateRoomPage() {
-  const [nickname, setNickname] = useState("");
-  const [kategori, setKategori] = useState("");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultNick = searchParams.get("nickname") || "";
 
-  const kategoriler = ["Hayvanlar", "Yiyecekler", "Ülkeler", "Teknoloji"];
+  const [nickname, setNickname] = useState(defaultNick);
+  const [kategori, setKategori] = useState("");
+
+  const kategoriler = useMemo(() => (["Hayvanlar", "Yiyecekler", "Renkler"]), []);
 
   const odaKur = () => {
     if (nickname.trim().length < 3) {
-      alert("Nickname giriniz.");
+      alert("Lütfen en az 3 harfli bir nickname girin.");
       return;
     }
     if (!kategori) {
@@ -19,13 +22,17 @@ function CreateRoomPage() {
       return;
     }
 
-    const odaKodu = uuidv4().split("-")[0]; // oda kodu buradan oluşuyor.
-    navigate(`/oda/${odaKodu}?nickname=${nickname}&kategori=${kategori}`);
+    const odaKodu = uuidv4().split("-")[0];
+    const q = `nickname=${encodeURIComponent(nickname)}&kategori=${encodeURIComponent(
+      kategori.toLowerCase()
+    )}`;
+    navigate(`/oda/${odaKodu}?${q}`);
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Oda Kur</h2>
+
       <input
         type="text"
         placeholder="Takma Ad (Nickname)"
@@ -33,11 +40,8 @@ function CreateRoomPage() {
         onChange={(e) => setNickname(e.target.value)}
         style={styles.input}
       />
-      <select
-        value={kategori}
-        onChange={(e) => setKategori(e.target.value)}
-        style={styles.input}
-      >
+
+      <select value={kategori} onChange={(e) => setKategori(e.target.value)} style={styles.input}>
         <option value="">Kategori Seçin</option>
         {kategoriler.map((kat) => (
           <option key={kat} value={kat}>
@@ -45,6 +49,7 @@ function CreateRoomPage() {
           </option>
         ))}
       </select>
+
       <button onClick={odaKur} style={styles.button}>
         Oda Oluştur ve Başla
       </button>
@@ -55,7 +60,7 @@ function CreateRoomPage() {
 const styles = {
   container: {
     height: "100vh",
-    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)", 
+    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
     color: "#fff",
     display: "flex",
     flexDirection: "column",
@@ -82,11 +87,6 @@ const styles = {
     color: "#333",
     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
     transition: "border-color 0.3s ease",
-  },
-  buttonGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
   },
   button: {
     padding: "14px 32px",

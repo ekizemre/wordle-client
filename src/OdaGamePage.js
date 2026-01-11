@@ -7,9 +7,8 @@ function OdaGamePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const nickname = searchParams.get("nickname");
-  const paramKategori = searchParams.get("kategori");
-  const kategori = paramKategori || "YIYECEKLER";
+  const nickname = searchParams.get("nickname") || "";
+  const kategori = (searchParams.get("kategori") || "yiyecekler").toLowerCase();
 
   const [dogruKelime, setDogruKelime] = useState("");
   const [tahmin, setTahmin] = useState("");
@@ -21,31 +20,39 @@ function OdaGamePage() {
   const [benimAdim, setBenimAdim] = useState("");
 
   useEffect(() => {
-    if (kategori) {
-      socket.emit("join_game_with_code", { odaKodu: odakodu, kategori, nickname });
-    } else {
-      socket.emit("join_game_random", { kategori: "Yiyecekler", nickname });
-    }
+    if (!odakodu) return;
+    if (nickname.trim().length < 3) return;
+
+    socket.emit("join_game_with_code", { odaKodu: odakodu, kategori, nickname });
 
     socket.on("match_found", (kelime) => setDogruKelime(kelime));
+
     socket.on("your_turn", (seninSirandaMi) => {
       setSiraBende(seninSirandaMi);
       setSure(30);
     });
+
     socket.on("opponent_guess", (kelime, renkler) => {
       setGecmisTahminler((prev) => [...prev, { kelime, renkler }]);
     });
+
     socket.on("game_result", (msg) => {
       setSonuc(msg);
       setSiraBende(false);
     });
+
     socket.on("nickname_info", ({ sen, rakip }) => {
       setBenimAdim(sen);
       setRakipAd(rakip);
     });
+
     socket.on("opponent_left", () => {
       setSonuc("Rakibiniz oyunu terk etti ❌");
       setSiraBende(false);
+    });
+
+    socket.on("error", (msg) => {
+      if (typeof msg === "string" && msg.trim()) alert(msg);
     });
 
     return () => {
@@ -55,11 +62,13 @@ function OdaGamePage() {
       socket.off("game_result");
       socket.off("nickname_info");
       socket.off("opponent_left");
+      socket.off("error");
     };
-  }, [kategori, nickname, odakodu]);
+  }, [odakodu, kategori, nickname]);
 
   useEffect(() => {
     if (!siraBende || sonuc) return;
+
     const timer = setInterval(() => {
       setSure((prev) => {
         if (prev === 1) {
@@ -69,11 +78,14 @@ function OdaGamePage() {
         return prev - 1;
       });
     }, 1000);
+
     return () => clearInterval(timer);
-  }, [siraBende, sonuc]);
+  }, [siraBende, sonuc, odakodu]);
 
   const tahminGonder = () => {
+    if (!siraBende || sonuc) return;
     if (tahmin.length !== 5) return;
+
     socket.emit("guess", { tahmin, odaKodu: odakodu });
     setTahmin("");
   };
@@ -85,13 +97,12 @@ function OdaGamePage() {
   };
 
   const oyundanCik = () => {
-    socket.disconnect();
     navigate("/");
   };
 
   return (
     <div style={styles.container}>
-      <h2>Kategori: {kategori?.toUpperCase()}</h2>
+      <h2>Kategori: {kategori.toUpperCase()}</h2>
       <h4>Oda Kodu: {odakodu}</h4>
 
       {benimAdim && rakipAd && (
@@ -100,7 +111,12 @@ function OdaGamePage() {
         </div>
       )}
 
-      {sonuc && <div style={styles.resultBox}><h3>{sonuc}</h3></div>}
+      {sonuc && (
+        <div style={styles.resultBox}>
+          <h3>{sonuc}</h3>
+        </div>
+      )}
+
       <h3>{siraBende ? "✅ Sıra sende!" : "⏳ Rakibi bekliyoruz..."}</h3>
       {siraBende && <h4>Kalan Süre: {sure} saniye</h4>}
 
@@ -108,10 +124,13 @@ function OdaGamePage() {
         {gecmisTahminler.map(({ kelime, renkler }, rowIndex) => (
           <div key={rowIndex} style={styles.row}>
             {kelime.split("").map((harf, i) => (
-              <div key={i} style={{
-                ...styles.cell,
-                backgroundColor: harfKutusu(renkler?.[i]),
-              }}>
+              <div
+                key={i}
+                style={{
+                  ...styles.cell,
+                  backgroundColor: harfKutusu(renkler?.[i]),
+                }}
+              >
                 {harf.toUpperCase()}
               </div>
             ))}
@@ -123,15 +142,12 @@ function OdaGamePage() {
         maxLength={5}
         value={tahmin}
         onChange={(e) => setTahmin(e.target.value.toLowerCase())}
-        disabled={!siraBende || sonuc}
+        disabled={!siraBende || !!sonuc}
         placeholder="5 harfli tahmin"
         style={styles.input}
       />
-      <button
-        onClick={tahminGonder}
-        disabled={!siraBende || sonuc}
-        style={styles.button}
-      >
+
+      <button onClick={tahminGonder} disabled={!siraBende || !!sonuc} style={styles.button}>
         Gönder
       </button>
 
@@ -161,7 +177,7 @@ const styles = {
     padding: "12px 24px",
     borderRadius: "10px",
     marginBottom: "20px",
-    color: "#facc15", // sarı
+    color: "#facc15",
     fontSize: "22px",
     boxShadow: "0 0 10px rgba(250, 204, 21, 0.3)",
   },
@@ -210,6 +226,5 @@ const styles = {
     transition: "background-color 0.3s ease",
   },
 };
-
 
 export default OdaGamePage;

@@ -7,7 +7,7 @@ function CategoryPage() {
   const nickname = searchParams.get("nickname") || "";
   const mode = searchParams.get("mode");
 
-  const kategoriler = ["Hayvanlar", "Yiyecekler", "Ülkeler", "Teknoloji"];
+  const kategoriler = ["Hayvanlar", "Yiyecekler", "Renkler"];
 
   const kategoriSec = (kategori) => {
     const q = `nickname=${encodeURIComponent(nickname)}${mode === "bot" ? "&mode=bot" : ""}`;

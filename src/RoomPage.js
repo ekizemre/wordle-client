@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function RoomPage() {
@@ -10,13 +10,18 @@ function RoomPage() {
   const [katilAd, setKatilAd] = useState("");
   const [katilKategori, setKatilKategori] = useState("");
 
+  const kategoriler = useMemo(() => ["Hayvanlar", "Yiyecekler", "Renkler"], []);
+
   const odaKur = () => {
     if (kurAd.trim().length < 3 || !kurKategori) {
       alert("Lütfen geçerli bir ad ve kategori girin.");
       return;
     }
     const odaKodu = Math.random().toString(36).substring(2, 7);
-    navigate(`/oda/${odaKodu}?nickname=${kurAd}&kategori=${kurKategori}`);
+    const q = `nickname=${encodeURIComponent(kurAd)}&kategori=${encodeURIComponent(
+      kurKategori.toLowerCase()
+    )}`;
+    navigate(`/oda/${odaKodu}?${q}`);
   };
 
   const odayaKatil = () => {
@@ -24,61 +29,78 @@ function RoomPage() {
       alert("Lütfen geçerli bir ad, oda kodu ve kategori girin.");
       return;
     }
-    navigate(`/oda/${katilKod}?nickname=${katilAd}&kategori=${katilKategori}`);
+    const q = `nickname=${encodeURIComponent(katilAd)}&kategori=${encodeURIComponent(
+      katilKategori.toLowerCase()
+    )}`;
+    navigate(`/oda/${katilKod}?${q}`);
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Oda Kur veya Katıl</h2>
+
       <div style={styles.columns}>
-        
         <div style={styles.card}>
           <h3>Oda Kur</h3>
+
           <input
             placeholder="Kullanıcı adınız"
             value={kurAd}
             onChange={(e) => setKurAd(e.target.value)}
             style={styles.input}
           />
+
           <select
             value={kurKategori}
             onChange={(e) => setKurKategori(e.target.value)}
             style={styles.input}
           >
             <option value="">Kategori Seçin</option>
-            <option value="Hayvanlar">Hayvanlar</option>
-            <option value="Yiyecekler">Yiyecekler</option>
-            <option value="Şehirler">Şehirler</option>
+            {kategoriler.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
           </select>
-          <button onClick={odaKur} style={styles.button}>Oluştur ve Başla</button>
+
+          <button onClick={odaKur} style={styles.button}>
+            Oluştur ve Başla
+          </button>
         </div>
 
-        
         <div style={styles.card}>
           <h3>Odaya Katıl</h3>
+
           <input
             placeholder="Oda Kodu"
             value={katilKod}
             onChange={(e) => setKatilKod(e.target.value)}
             style={styles.input}
           />
+
           <input
             placeholder="Takma Ad"
             value={katilAd}
             onChange={(e) => setKatilAd(e.target.value)}
             style={styles.input}
           />
+
           <select
             value={katilKategori}
             onChange={(e) => setKatilKategori(e.target.value)}
             style={styles.input}
           >
             <option value="">Kategori Seçin</option>
-            <option value="Hayvanlar">Hayvanlar</option>
-            <option value="Yiyecekler">Yiyecekler</option>
-            <option value="Şehirler">Şehirler</option>
+            {kategoriler.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
           </select>
-          <button onClick={odayaKatil} style={styles.button}>Katıl</button>
+
+          <button onClick={odayaKatil} style={styles.button}>
+            Katıl
+          </button>
         </div>
       </div>
     </div>
