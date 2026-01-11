@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import socket from "./socket"; 
+import socket from "./socket";
 
 function GamePage() {
   const [searchParams] = useSearchParams();
   const nickname = searchParams.get("nickname");
+  const mode = searchParams.get("mode");
   const { kategori } = useParams();
 
   const [dogruKelime, setDogruKelime] = useState("");
   const [tahmin, setTahmin] = useState("");
-  const [gecmisTahminler, setGecmisTahminler] = useState([]); 
+  const [gecmisTahminler, setGecmisTahminler] = useState([]);
   const [sonuc, setSonuc] = useState("");
   const [siraBende, setSiraBende] = useState(false);
   const [sure, setSure] = useState(30);
@@ -19,7 +20,11 @@ function GamePage() {
   const [rakipAd, setRakipAd] = useState("");
 
   useEffect(() => {
-    socket.emit("join_game", { kategori, nickname });
+    if (mode === "bot") {
+      socket.emit("play_vs_bot", { kategori, nickname });
+    } else {
+      socket.emit("join_game", { kategori, nickname });
+    }
 
     socket.on("match_found", (kelime) => setDogruKelime(kelime));
     socket.on("opponent_guess", (kelime, renkler) =>
@@ -39,7 +44,12 @@ function GamePage() {
         setSonuc("");
         setSiraBende(false);
         setSure(30);
-        socket.emit("join_game", { kategori, nickname });
+
+        if (mode === "bot") {
+          socket.emit("play_vs_bot", { kategori, nickname });
+        } else {
+          socket.emit("join_game", { kategori, nickname });
+        }
       } else {
         alert("Rakip tekrar oynamak istemedi.");
       }
@@ -58,14 +68,14 @@ function GamePage() {
       socket.off("rematch_response");
       socket.off("nickname_info");
     };
-  }, [kategori, nickname]);
+  }, [kategori, nickname, mode]);
 
   useEffect(() => {
     if (!siraBende || sonuc) return;
     const interval = setInterval(() => {
       setSure((prev) => {
         if (prev === 1) {
-          socket.emit("guess", { tahmin: "-----", kategori });
+          setSiraBende(false);
           return 30;
         }
         return prev - 1;
@@ -89,8 +99,16 @@ function GamePage() {
   return (
     <div style={styles.container}>
       <h2>{kategori.toUpperCase()} Kategorisi</h2>
-      {benimAdim && rakipAd && <div><strong>{benimAdim}</strong> vs <strong>{rakipAd}</strong></div>}
-      {sonuc && <div style={styles.resultBox}><h3>{sonuc}</h3></div>}
+      {benimAdim && rakipAd && (
+        <div>
+          <strong>{benimAdim}</strong> vs <strong>{rakipAd}</strong>
+        </div>
+      )}
+      {sonuc && (
+        <div style={styles.resultBox}>
+          <h3>{sonuc}</h3>
+        </div>
+      )}
       <h3>{siraBende ? "✅ Sıra sende!" : "⏳ Rakibi bekliyoruz..."}</h3>
       {siraBende && <h4>Kalan Süre: {sure} saniye</h4>}
 
@@ -120,24 +138,30 @@ function GamePage() {
         style={styles.input}
         placeholder="5 HARFLİ TAHMİN"
       />
-      <button
-  onClick={tahminGonder}
-  disabled={!siraBende || sonuc}
-  className="fancy-button"
->
-  Gönder
-</button>
 
+      <button onClick={tahminGonder} disabled={!siraBende || sonuc} className="fancy-button">
+        Gönder
+      </button>
 
       {sonuc && (
         <div style={{ marginTop: 20 }}>
-          <button onClick={() => socket.emit("join_game", { kategori, nickname })} style={styles.button}>
+          <button
+            onClick={() => {
+              if (mode === "bot") socket.emit("play_vs_bot", { kategori, nickname });
+              else socket.emit("join_game", { kategori, nickname });
+            }}
+            style={styles.button}
+          >
             Yeni Oyuncu ile Oyna
           </button>
-          <button onClick={() => {
-            setRematchBekleniyor(true);
-            socket.emit("rematch_request");
-          }} style={styles.button}>
+
+          <button
+            onClick={() => {
+              setRematchBekleniyor(true);
+              socket.emit("rematch_request");
+            }}
+            style={styles.button}
+          >
             Rakip ile Tekrar Oyna
           </button>
         </div>
@@ -146,8 +170,12 @@ function GamePage() {
       {rematchIstekVar && (
         <div style={{ marginTop: 10 }}>
           <p>Rakip tekrar oynamak istiyor. Kabul ediyor musun?</p>
-          <button onClick={() => socket.emit("rematch_response", "yes")} style={styles.button}>Evet</button>
-          <button onClick={() => socket.emit("rematch_response", "no")} style={styles.button}>Hayır</button>
+          <button onClick={() => socket.emit("rematch_response", "yes")} style={styles.button}>
+            Evet
+          </button>
+          <button onClick={() => socket.emit("rematch_response", "no")} style={styles.button}>
+            Hayır
+          </button>
         </div>
       )}
     </div>
@@ -166,12 +194,6 @@ const styles = {
     gap: "20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
-  title: {
-    fontSize: "2.8rem",
-    marginBottom: "10px",
-    color: "#f5f5f5",
-    textShadow: "2px 2px 5px rgba(0,0,0,0.4)",
-  },
   input: {
     fontSize: "18px",
     padding: "12px",
@@ -184,11 +206,6 @@ const styles = {
     color: "#333",
     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
     transition: "border-color 0.3s ease",
-  },
-  buttonGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
   },
   button: {
     padding: "14px 32px",
@@ -222,7 +239,5 @@ const styles = {
     justifyContent: "center",
   },
 };
-
-
 
 export default GamePage;

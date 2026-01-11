@@ -5,12 +5,13 @@ function HomePage() {
   const navigate = useNavigate();
   const [nickname, setNickname] = useState("");
 
-  const baslat = (yol) => {
+  const baslat = (yol, extraQuery = "") => {
     if (nickname.trim().length < 3) {
       alert("Lütfen en az 3 harfli bir isim girin.");
       return;
     }
-    navigate(`${yol}?nickname=${nickname}`);
+    const q = `nickname=${encodeURIComponent(nickname)}${extraQuery ? `&${extraQuery}` : ""}`;
+    navigate(`${yol}?${q}`);
   };
 
   return (
@@ -29,6 +30,11 @@ function HomePage() {
         <button style={styles.button} onClick={() => baslat("/kategoriler")}>
           Rastgele Rakiple Oyna
         </button>
+
+        <button style={styles.button} onClick={() => baslat("/kategoriler", "mode=bot")}>
+          Bot ile Oyna
+        </button>
+
         <button style={styles.button} onClick={() => baslat("/oda-kur")}>
           Oda Kur & Katıl
         </button>
