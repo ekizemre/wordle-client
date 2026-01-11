@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import socket from "./socket";
 
@@ -19,56 +19,90 @@ function GamePage() {
   const [benimAdim, setBenimAdim] = useState("");
   const [rakipAd, setRakipAd] = useState("");
 
-  useEffect(() => {
+  const resetGameUI = useCallback(() => {
+    setDogruKelime("");
+    setTahmin("");
+    setGecmisTahminler([]);
+    setSonuc("");
+    setSiraBende(false);
+    setSure(30);
+    setRematchIstekVar(false);
+    setRematchBekleniyor(false);
+  }, []);
+
+  const startNewMatch = useCallback(() => {
+    resetGameUI();
+
     if (mode === "bot") {
       socket.emit("play_vs_bot", { kategori, nickname });
     } else {
       socket.emit("join_game", { kategori, nickname });
     }
+  }, [kategori, nickname, mode, resetGameUI]);
 
-    socket.on("match_found", (kelime) => setDogruKelime(kelime));
-    socket.on("opponent_guess", (kelime, renkler) =>
-      setGecmisTahminler((prev) => [...prev, { kelime, renkler }])
-    );
-    socket.on("your_turn", (seninSirandaMi) => {
+  useEffect(() => {
+    if (!nickname || !kategori) return;
+
+    if (!socket.connected) socket.connect();
+    startNewMatch();
+
+    const onMatchFound = (kelime) => {
+      setDogruKelime(kelime);
+      setTahmin("");
+      setGecmisTahminler([]);
+      setSonuc("");
+      setRematchIstekVar(false);
+      setRematchBekleniyor(false);
+    };
+
+    const onOpponentGuess = (kelime, renkler) => {
+      setGecmisTahminler((prev) => [...prev, { kelime, renkler }]);
+    };
+
+    const onYourTurn = (seninSirandaMi) => {
       setSiraBende(seninSirandaMi);
       setSure(30);
-    });
-    socket.on("game_result", (mesaj) => setSonuc(mesaj));
-    socket.on("rematch_request", () => setRematchIstekVar(true));
-    socket.on("rematch_response", (cevap) => {
+    };
+
+    const onGameResult = (mesaj) => {
+      setSonuc(mesaj);
+      setSiraBende(false);
+    };
+
+    const onRematchRequest = () => setRematchIstekVar(true);
+
+    const onRematchResponse = (cevap) => {
       setRematchBekleniyor(false);
       if (cevap === "yes") {
-        setDogruKelime("");
-        setGecmisTahminler([]);
-        setSonuc("");
-        setSiraBende(false);
-        setSure(30);
-
-        if (mode === "bot") {
-          socket.emit("play_vs_bot", { kategori, nickname });
-        } else {
-          socket.emit("join_game", { kategori, nickname });
-        }
+        resetGameUI();
       } else {
         alert("Rakip tekrar oynamak istemedi.");
       }
-    });
-    socket.on("nickname_info", ({ sen, rakip }) => {
+    };
+
+    const onNicknameInfo = ({ sen, rakip }) => {
       setBenimAdim(sen);
       setRakipAd(rakip);
-    });
+    };
+
+    socket.on("match_found", onMatchFound);
+    socket.on("opponent_guess", onOpponentGuess);
+    socket.on("your_turn", onYourTurn);
+    socket.on("game_result", onGameResult);
+    socket.on("rematch_request", onRematchRequest);
+    socket.on("rematch_response", onRematchResponse);
+    socket.on("nickname_info", onNicknameInfo);
 
     return () => {
-      socket.off("match_found");
-      socket.off("opponent_guess");
-      socket.off("your_turn");
-      socket.off("game_result");
-      socket.off("rematch_request");
-      socket.off("rematch_response");
-      socket.off("nickname_info");
+      socket.off("match_found", onMatchFound);
+      socket.off("opponent_guess", onOpponentGuess);
+      socket.off("your_turn", onYourTurn);
+      socket.off("game_result", onGameResult);
+      socket.off("rematch_request", onRematchRequest);
+      socket.off("rematch_response", onRematchResponse);
+      socket.off("nickname_info", onNicknameInfo);
     };
-  }, [kategori, nickname, mode]);
+  }, [kategori, nickname, mode, resetGameUI, startNewMatch]);
 
   useEffect(() => {
     if (!siraBende || sonuc) return;
@@ -85,8 +119,8 @@ function GamePage() {
   }, [siraBende, sonuc]);
 
   const tahminGonder = () => {
-    if (tahmin.length !== 5) return;
-    socket.emit("guess", { tahmin, kategori });
+    if (tahmin.length !== 5 || sonuc) return;
+    socket.emit("guess", { tahmin: tahmin.toLowerCase(), kategori });
     setTahmin("");
   };
 
@@ -99,16 +133,19 @@ function GamePage() {
   return (
     <div style={styles.container}>
       <h2>{kategori.toUpperCase()} Kategorisi</h2>
+
       {benimAdim && rakipAd && (
         <div>
           <strong>{benimAdim}</strong> vs <strong>{rakipAd}</strong>
         </div>
       )}
+
       {sonuc && (
         <div style={styles.resultBox}>
           <h3>{sonuc}</h3>
         </div>
       )}
+
       <h3>{siraBende ? "✅ Sıra sende!" : "⏳ Rakibi bekliyoruz..."}</h3>
       {siraBende && <h4>Kalan Süre: {sure} saniye</h4>}
 
@@ -118,10 +155,7 @@ function GamePage() {
             {kelime.split("").map((harf, i) => (
               <div
                 key={i}
-                style={{
-                  ...styles.cell,
-                  backgroundColor: harfKutusu(renkler?.[i]),
-                }}
+                style={{ ...styles.cell, backgroundColor: harfKutusu(renkler?.[i]) }}
               >
                 {harf.toUpperCase()}
               </div>
@@ -134,33 +168,32 @@ function GamePage() {
         maxLength={5}
         value={tahmin}
         onChange={(e) => setTahmin(e.target.value.toLowerCase())}
-        disabled={!siraBende || sonuc}
+        disabled={!siraBende || !!sonuc}
         style={styles.input}
         placeholder="5 HARFLİ TAHMİN"
       />
 
-      <button onClick={tahminGonder} disabled={!siraBende || sonuc} className="fancy-button">
+      <button onClick={tahminGonder} disabled={!siraBende || !!sonuc} className="fancy-button">
         Gönder
       </button>
 
       {sonuc && (
-        <div style={{ marginTop: 20 }}>
-          <button
-            onClick={() => {
-              if (mode === "bot") socket.emit("play_vs_bot", { kategori, nickname });
-              else socket.emit("join_game", { kategori, nickname });
-            }}
-            style={styles.button}
-          >
+        <div style={{ marginTop: 20, display: "flex", gap: 12 }}>
+          <button onClick={startNewMatch} style={styles.button}>
             Yeni Oyuncu ile Oyna
           </button>
 
           <button
             onClick={() => {
+              if (mode === "bot") {
+                startNewMatch();
+                return;
+              }
               setRematchBekleniyor(true);
               socket.emit("rematch_request");
             }}
             style={styles.button}
+            disabled={rematchBekleniyor}
           >
             Rakip ile Tekrar Oyna
           </button>
@@ -194,6 +227,12 @@ const styles = {
     gap: "20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
+  resultBox: {
+    background: "rgba(0,0,0,0.25)",
+    padding: "12px 20px",
+    borderRadius: "12px",
+  },
+  grid: { marginBottom: "10px" },
   input: {
     fontSize: "18px",
     padding: "12px",
@@ -205,11 +244,10 @@ const styles = {
     backgroundColor: "#fff",
     color: "#333",
     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-    transition: "border-color 0.3s ease",
   },
   button: {
-    padding: "14px 32px",
-    fontSize: "18px",
+    padding: "14px 22px",
+    fontSize: "16px",
     fontWeight: "bold",
     background: "linear-gradient(135deg, #6e8efb, #a777e3)",
     border: "none",
@@ -218,7 +256,6 @@ const styles = {
     cursor: "pointer",
     minWidth: "220px",
     boxShadow: "0 6px 20px rgba(0, 0, 0, 0.3)",
-    transition: "all 0.3s ease",
   },
   cell: {
     width: "40px",
