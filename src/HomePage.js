@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import socket from "./socket";
 
 function HomePage() {
   const navigate = useNavigate();
@@ -10,7 +11,15 @@ function HomePage() {
       alert("Lütfen en az 3 harfli bir isim girin.");
       return;
     }
-    const q = `nickname=${encodeURIComponent(nickname)}${extraQuery ? `&${extraQuery}` : ""}`;
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    const q = `nickname=${encodeURIComponent(nickname)}${
+      extraQuery ? `&${extraQuery}` : ""
+    }`;
+
     navigate(`${yol}?${q}`);
   };
 
@@ -31,7 +40,10 @@ function HomePage() {
           Rastgele Rakiple Oyna
         </button>
 
-        <button style={styles.button} onClick={() => baslat("/kategoriler", "mode=bot")}>
+        <button
+          style={styles.button}
+          onClick={() => baslat("/kategoriler", "mode=bot")}
+        >
           Bot ile Oyna
         </button>
 
