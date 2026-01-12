@@ -1,70 +1,65 @@
-# Getting Started with Create React App
+Wordle PvP
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Wordle PvP, React ve Node.js (Socket.IO) kullanılarak geliştirilmiş, gerçek zamanlı çok oyunculu ve bot destekli bir kelime tahmin oyunudur. Proje, hem PvP hem de tek oyunculu senaryolarda stabil çalışacak şekilde tasarlanmıştır.
 
-## Available Scripts
+Özellikler
 
-In the project directory, you can run:
+Gerçek zamanlı PvP oyun yapısı
 
-### `npm start`
+Bot ile tek oyunculu oynama modu
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Oda kurma ve oda kodu ile katılma
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Türkçe, 5 harfli kelime havuzu
 
-### `npm test`
+Tekrar oynama (rematch) desteği
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Stabil socket mimarisi ve aktif oda yönetimi
 
-### `npm run build`
+Bot Mantığı
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Bot, seçilen kategoriye göre kelime havuzundan tahmin yapan basit bir yapıdadır. Oyuncu ile aynı oyun kurallarına tabidir ve PvP altyapısı ile aynı sistem üzerinden çalışır. Bu sayede oyun tek başına oynanabilir hâle gelirken, gerçek zamanlı oyun akışı bozulmaz.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Kullanılan Teknolojiler
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Frontend: React
 
-### `npm run eject`
+Backend: Node.js, Express
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Realtime: Socket.IO
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Kurulum
+Client
+cd client
+npm install
+npm start
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Server
+cd server
+npm install
+node index.js
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+Varsayılan olarak server 3001 portunda çalışır.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Oyun Modları
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Rastgele PvP: Kategori seçerek rastgele rakiple eşleşme
 
-### Code Splitting
+Bot Modu: Rakip beklemeden tek başına oynama
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Özel Oda: Oda kurarak arkadaşlarla oynama
 
-### Analyzing the Bundle Size
+Geliştirmeye Açık Alanlar
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Daha akıllı bot mantığı
 
-### Making a Progressive Web App
+Skor ve istatistik sistemi
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Daha geniş kelime havuzu
 
-### Advanced Configuration
+Yeniden bağlanma (reconnect) desteği
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Not
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Bu proje, gerçek zamanlı uygulamalarda state yönetimi ve socket mimarisini pratik etmek amacıyla geliştirilmiştir.
